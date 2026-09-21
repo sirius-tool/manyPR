@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>配信ごっこ — LIVE SIMULATOR</title>
+  <meta name="description" content="ライブ配信の画面を自由に作って遊べる非公式シミュレーター">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <section id="setupScreen" class="screen">
+      <div class="setup-shell">
+        <header class="brand-block">
+          <div class="brand-mark">▶</div>
+          <div>
+            <div class="brand-title">LIVE SIMULATOR</div>
+            <div class="brand-subtitle">配信ごっこ</div>
+          </div>
+        </header>
+
+        <div class="setup-card">
+          <div class="eyebrow">START A STREAM</div>
+          <h1>配信をつくろう</h1>
+          <p class="lead">配信者の情報やタイトルを決めて、「配信開始」を押すだけ。</p>
+
+          <div class="grid-form">
+            <label class="field full">
+              <span>配信タイトル</span>
+              <input id="titleInput" type="text" maxlength="100" value="【LIVE】今日は雑談します！">
+            </label>
+
+            <label class="field">
+              <span>配信者名</span>
+              <input id="creatorInput" type="text" maxlength="30" value="配信ごっこチャンネル">
+            </label>
+
+            <label class="field">
+              <span>登録者数</span>
+              <input id="subsInput" type="number" min="0" max="999999999" value="12800">
+            </label>
+
+            <label class="field">
+              <span>開始時の視聴者数</span>
+              <input id="viewersInput" type="number" min="0" max="9999999" value="386">
+            </label>
+
+            <label class="field">
+              <span>開始時の高評価数</span>
+              <input id="likesInput" type="number" min="0" max="9999999" value="121">
+            </label>
+
+            <label class="field">
+              <span>チャット表示</span>
+              <select id="chatModeInput">
+                <option value="auto">自動チャットあり</option>
+                <option value="manual">自分で入力だけ</option>
+              </select>
+            </label>
+
+            <div class="field">
+              <span>チャンネルアイコン</span>
+              <div class="avatar-picker">
+                <div id="setupAvatar" class="avatar avatar-lg avatar-placeholder">配</div>
+                <label class="upload-button">
+                  画像を選択
+                  <input id="avatarInput" type="file" accept="image/*">
+                </label>
+              </div>
+            </div>
+
+            <div class="field">
+              <span>配信画面の背景</span>
+              <div class="poster-picker">
+                <div id="posterPreview" class="poster-preview">
+                  <span>画像なし</span>
+                </div>
+                <label class="upload-button">
+                  画像を選択
+                  <input id="posterInput" type="file" accept="image/*">
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setup-note">
+            <strong>ポイント：</strong>アイコンや背景画像はブラウザ内だけで使います。サーバーにはアップロードしません。
+          </div>
+
+          <div class="setup-actions">
+            <button id="startButton" class="primary-button">🔴 配信開始</button>
+            <button id="loadDemoButton" class="secondary-button">デモ設定を読み込む</button>
+          </div>
+        </div>
+
+        <p class="footer-note">YouTubeのライブ配信画面を参考にした、非公式の配信シミュレーターです。</p>
+      </div>
+    </section>
+
+    <section id="streamScreen" class="screen hidden">
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="mini-brand">
+            <span class="mini-mark">▶</span>
+            <span>LIVE SIMULATOR</span>
+          </div>
+          <button class="icon-button" id="backToSetup" title="設定に戻る">☰</button>
+        </div>
+        <div class="search-dummy">
+          <span>検索</span>
+          <div class="search-icon">⌕</div>
+        </div>
+        <div class="topbar-right">
+          <button class="top-action" id="shareButton">↗ 共有</button>
+          <button class="top-action danger" id="endButton">■ 配信終了</button>
+        </div>
+      </header>
+
+      <main class="watch-layout">
+        <div class="main-column">
+          <div id="player" class="player">
+            <div class="player-background" id="playerBackground"></div>
+            <div class="player-shade"></div>
+            <div class="player-center">
+              <div class="live-badge">LIVE</div>
+              <div class="player-title-big" id="playerTitle">【LIVE】今日は雑談します！</div>
+              <div class="player-subtitle-big">配信中</div>
+            </div>
+            <div class="player-live-meta">
+              <span>🔴 ライブ配信中</span>
+              <span id="playerViewers">386</span> 人が視聴中
+            </div>
+            <div class="player-controls">
+              <div class="control-group">
+                <span>▶</span>
+                <span id="elapsedTime">00:00:00</span>
+              </div>
+              <div class="control-group">
+                <span>🔊</span>
+                <span>⚙</span>
+                <span>⛶</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-info">
+            <div class="video-info-title" id="infoTitle"></div>
+            <div class="channel-row">
+              <img id="streamAvatar" class="avatar" alt="">
+              <div class="channel-main">
+                <div class="channel-name-line">
+                  <strong id="streamCreator"></strong>
+                  <span class="verified-dot" title="配信ごっこ内の演出">✓</span>
+                </div>
+                <div class="channel-subs"><span id="streamSubs"></span> 登録者</div>
+              </div>
+              <button class="subscribe-button" id="subscribeButton">チャンネル登録</button>
+            </div>
+
+            <div class="stats-row">
+              <button id="likeButton" class="stat-button">👍 <span id="likesCount">0</span></button>
+              <button class="stat-button">👎</button>
+              <button id="clipButton" class="stat-button">✂ クリップ</button>
+              <button id="saveButton" class="stat-button">▱ 保存</button>
+              <button id="shareButton2" class="stat-button">↗ 共有</button>
+              <div class="stats-spacer"></div>
+              <span class="live-clock">⏱ <span id="clockText">00:00:00</span></span>
+            </div>
+
+            <div class="description-box">
+              <div><strong>ライブ配信中</strong> ・ <span id="descriptionViewers">386</span> 人が視聴中</div>
+              <div class="description-text">この画面は「配信ごっこ」のシミュレーションです。視聴者数やチャットは演出として変化します。</div>
+              <button class="more-button" id="moreButton">もっと見る</button>
+            </div>
+          </div>
+
+          <div id="eventBanner" class="event-banner hidden"></div>
+          <section class="control-panel">
+            <div class="control-panel-head">
+              <div>
+                <div class="eyebrow">STREAM CONTROLS</div>
+                <h2>配信を操作</h2>
+              </div>
+              <div class="status-pill"><span class="status-dot"></span>配信中</div>
+            </div>
+            <div class="control-grid">
+              <label class="control-field">
+                <span>視聴者増減</span>
+                <input id="viewerDelta" type="range" min="-20" max="50" value="5">
+                <span class="range-value" id="viewerDeltaValue">+5</span>
+              </label>
+              <label class="control-field">
+                <span>チャット速度</span>
+                <select id="chatSpeed">
+                  <option value="5200">ゆっくり</option>
+                  <option value="3100" selected>ふつう</option>
+                  <option value="1500">高速</option>
+                </select>
+              </label>
+              <label class="control-field">
+                <span>配信イベント</span>
+                <div class="event-buttons">
+                  <button class="mini-event" data-event="spike">視聴者急増</button>
+                  <button class="mini-event" data-event="superchat">スパチャ風</button>
+                  <button class="mini-event" data-event="milestone">登録者記念</button>
+                  <button class="mini-event" data-event="raid">大量流入</button>
+                </div>
+              </label>
+              <label class="control-field">
+                <span>配信者コメント</span>
+                <div class="inline-row">
+                  <input id="creatorMessageInput" type="text" maxlength="100" placeholder="コメントを送信">
+                  <button id="creatorMessageButton" class="small-button">送信</button>
+                </div>
+              </label>
+            </div>
+          </section>
+        </div>
+
+        <aside class="chat-panel">
+          <div class="chat-header">
+            <div class="chat-header-top">
+              <strong>ライブチャット</strong>
+              <button class="chat-menu">⋮</button>
+            </div>
+            <div class="chat-tabs">
+              <button class="active">トップチャット</button>
+              <button>チャット</button>
+              <button id="chatSlowModeButton">低速モード</button>
+            </div>
+          </div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <div class="chat-bottom">
+            <div id="shareToast" class="share-toast hidden">共有リンクをコピーしました</div>
+            <div id="pinnedComment" class="pinned-comment hidden"></div>
+            <div class="chat-input-row">
+              <div id="userAvatarSmall" class="avatar avatar-sm">自</div>
+              <input id="chatInput" type="text" maxlength="200" placeholder="メッセージを入力">
+              <button id="chatSendButton">➤</button>
+            </div>
+            <div class="chat-footnote">シミュレーターのチャットです</div>
+          </div>
+        </aside>
+      </main>
+    </section>
+
+    <div id="endModal" class="modal hidden">
+      <div class="modal-card">
+        <div class="modal-icon">✓</div>
+        <div class="eyebrow">STREAM ENDED</div>
+        <h2>配信が終了しました</h2>
+        <p id="endSummary"></p>
+        <div class="modal-actions">
+          <button id="restartButton" class="primary-button">もう一度配信する</button>
+          <button id="editButton" class="secondary-button">設定を編集</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="comments.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
